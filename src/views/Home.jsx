@@ -8,7 +8,9 @@ const Home = () => {
   return (
     <div>
       Home
+
       <h5>Personas en global:{store.personas}</h5>
+      
     </div>
   )
 }
