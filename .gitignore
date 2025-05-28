@@ -1,9 +1,17 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# do not ignore gitpod and render files
+!.gitpod.Dockerfile
+!Dockerfile.render
+!.gitpod.yml
+!render.yml
+!.render-buildpacks.json
+
 # dependencies
 /node_modules
 /.pnp
 .pnp.js
+src/api/myenv/lib/
 
 # testing
 /coverage
