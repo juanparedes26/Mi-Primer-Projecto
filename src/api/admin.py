@@ -11,5 +11,5 @@ def setup_admin(app):
     app.config['SECRET_KEY'] = '1005872250' 
     app.config['FLASK_ADMIN_SWATCH'] = 'sandstone'
     admin = Admin(app, name=' DATABASE', template_mode='bootstrap3')
-    # Add administrative views here
+ 
     admin.add_view(UserAdmin(User, db.session))
