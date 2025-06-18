@@ -7,7 +7,7 @@ from database import db                                          # importa la db
 from datetime import timedelta                                   # importa tiempo especifico para rendimiento de token válido
 
 
-admin_bp = Blueprint('admin', __name__)     # instanciar admin_bp desde clase Blueprint para crear las rutas.
+admin_bp = Blueprint('api/admin', __name__)     # instanciar admin_bp desde clase Blueprint para crear las rutas.
 
 bcrypt = Bcrypt()
 jwt = JWTManager()
