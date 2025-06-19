@@ -19,38 +19,44 @@ def show_hello_world():
 
 
 # RUTA CREAR USUARIO
-@admin_bp.route('/users', methods=['POST'])
+@admin_bp.route('/register', methods=['POST'])
 def create_user():
     try:
-        email = request.json.get('email')
-        password = request.json.get('password')
-        name = request.json.get('name')
+        data = request.json # Obtenemos los datos del cuerpo de la solicitud JSON
+        email = data.get('email')
+        password =data.get('password')
+        first_name= data.get('first_name')
+        last_name = data.get('last_name')
 
-        if not email or not password or not name:
-            return jsonify({'error': 'Email, password and Name are required.'}), 400
+        if not email or not password :
+            return jsonify({'error': 'Rellena todos los campos'}), 400
+        if not first_name or not last_name:
+            return jsonify({'error': 'Nombres y apellidos son obligatorios'}), 400
+        
 
         existing_user = User.query.filter_by(email=email).first()
         if existing_user:
-            return jsonify({'error': 'Email already exists.'}), 409
+            return jsonify({'error': 'Este e-mail ya se encuentra registrado.'}), 409
 
         password_hash = bcrypt.generate_password_hash(password).decode('utf-8')
 
 
         # Ensamblamos el usuario nuevo
-        new_user = User(email=email, password=password_hash, name=name)
+        new_user = User(email=email, password=password_hash, first_name=first_name, last_name=last_name)
 
 
         db.session.add(new_user)
         db.session.commit()
-
+        
         good_to_share_user = {
+            
             'id': new_user.id,
-            'name':new_user.name,
             'email':new_user.email,
-            'password':password
+            'first_name': new_user.first_name,
+            'last_name': new_user.last_name,
         }
 
-        return jsonify({'message': 'User created successfully.','user_created':good_to_share_user}), 201
+        return jsonify({'message': 'Usuario creado.','user_created':good_to_share_user}), 201
 
     except Exception as e:
         return jsonify({'error': 'Error in user creation: ' + str(e)}), 500
