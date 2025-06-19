@@ -29,6 +29,8 @@ def create_user():
         password =data.get('password')
         first_name= data.get('first_name')
         last_name = data.get('last_name')
+         # Por defecto, is_admin es False si no se proporciona
+
        
         email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         if not re.match(email_regex, email):
@@ -64,6 +66,8 @@ def create_user():
             'email':new_user.email,
             'first_name': new_user.first_name,
             'last_name': new_user.last_name,
+           
+           
         }
 
         return jsonify({'message': 'Usuario creado.','user_created':good_to_share_user}), 201
