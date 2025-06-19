@@ -8,12 +8,15 @@ from public_bp import public_bp                     # Acá importamos rutas publ
 from database import db                             # Acá importamos la base de datos inicializada
 from flask_cors import CORS
 from admin import setup_admin
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}}, supports_credentials=True)
 ###CONFIGURACION ADMIN
 setup_admin(app)
+
+migrate = Migrate(app, db)
 
 
 

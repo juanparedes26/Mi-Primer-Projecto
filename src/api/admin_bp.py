@@ -4,7 +4,9 @@ from flask_bcrypt import Bcrypt                                  # Bcrypt para e
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity   # Jwt para tokens
 from models import User                                          # importar tabla "User" de models
 from database import db                                          # importa la db desde database.py
-from datetime import timedelta                                   # importa tiempo especifico para rendimiento de token válido
+from datetime import timedelta   
+import re
+                                # importa tiempo especifico para rendimiento de token válido
 
 
 admin_bp = Blueprint('api/admin', __name__)     # instanciar admin_bp desde clase Blueprint para crear las rutas.
@@ -22,11 +24,19 @@ def show_hello_world():
 @admin_bp.route('/register', methods=['POST'])
 def create_user():
     try:
-        data = request.json # Obtenemos los datos del cuerpo de la solicitud JSON
+        data =  request.get_json()  # Obtenemos los datos del cuerpo de la solicitud JSON
         email = data.get('email')
         password =data.get('password')
         first_name= data.get('first_name')
         last_name = data.get('last_name')
+       
+        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+        if not re.match(email_regex, email):
+            return jsonify({'error': 'El correo electrónico no es válido'}), 400
+     
+        password_regex = r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'
+        if not re.match(password_regex, password):
+            return jsonify({'error': 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un símbolo'}), 400
 
         if not email or not password :
             return jsonify({'error': 'Rellena todos los campos'}), 400
@@ -63,18 +73,20 @@ def create_user():
 
 
 #RUTA LOG-IN ( CON TOKEN DE RESPUESTA )
-@admin_bp.route('/token', methods=['POST'])
-def get_token():
+@admin_bp.route('/login', methods=['POST'])
+def login():
     try:
         #  Primero chequeamos que por el body venga la info necesaria:
         email = request.json.get('email')
         password = request.json.get('password')
 
         if not email or not password:
-            return jsonify({'error': 'Email and password are required.'}), 400
+            return jsonify({'error': 'Email y  contraseña son obligatorios.'}), 400
         
         # Buscamos al usuario con ese correo electronico ( si lo encuentra lo guarda ):
-        login_user = User.query.filter_by(email=request.json['email']).one()
+        login_user = User.query.filter_by(email=request.json['email']).first()
+        if not login_user:
+            return jsonify({'error': 'Usuario no encontrado.'}), 404
 
         # Verificamos que el password sea correcto:
         password_from_db = login_user.password #  Si loguin_user está vacio, da error y se va al "Except".
@@ -86,7 +98,7 @@ def get_token():
 
             user_id = login_user.id       # recuperamos el id del usuario para crear el token...
             access_token = create_access_token(identity=user_id, expires_delta=expires)   # creamos el token con tiempo vencimiento
-            return jsonify({ 'access_token':access_token}), 200  # Enviamos el token al front ( si es necesario serializamos el "login_user" y tambien lo enviamos en el objeto json )
+            return jsonify({ 'access_token':access_token,"login_user":{"id":login_user.id,"email":login_user.email,"first_name":login_user.first_name,"last_name":login_user.last_name}}), 200  # Enviamos el token al front ( si es necesario serializamos el "login_user" y tambien lo enviamos en el objeto json )
 
         else:
             return {"Error":"Contraseña  incorrecta"}

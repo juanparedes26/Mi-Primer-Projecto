@@ -4,7 +4,7 @@ from database import db
 from models import User, Order, OrderItem, Product, CartItem , Favorite
 
 class UserAdmin(ModelView):
-    column_list = ('id', 'name', 'email', 'is_admin', 'created_at')
+    column_list = ('id', 'first_name',"last_name", 'email', 'is_admin', 'created_at')
 
 class OrderAdmin(ModelView):
     column_list = ('id', 'user_id', 'user.email', 'created_at', 'status', 'total_price')
@@ -22,7 +22,7 @@ class FavoriteAdmin(ModelView):
 
 def setup_admin(app):
     app.config['SECRET_KEY'] = 'pon_aqui_tu_secret_key_segura'
-    app.config['FLASK_ADMIN_SWATCH'] = 'sandstone'
+    app.config['FLASK_ADMIN_SWATCH'] = 'slate'
     admin = Admin(app, name='DATABASE', template_mode='bootstrap3')
 
     admin.add_view(UserAdmin(User, db.session))
