@@ -16,6 +16,8 @@ class User(db.Model):
 
     orders: Mapped[list["Order"]] = relationship(back_populates="user")
     cart_items: Mapped[list["CartItem"]] = relationship(back_populates="user")
+    favorites: Mapped[list["Favorite"]] = relationship(back_populates="user")
+
 
 
 class Order(db.Model):
@@ -78,7 +80,17 @@ class CartItem(db.Model):
     talla: Mapped[str] = mapped_column(String(20), nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
+class Favorite(db.Model):
+    __tablename__ = "favorites"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    user: Mapped["User"] = relationship()
+
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), nullable=False)
+    product: Mapped["Product"] = relationship()
+
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
 

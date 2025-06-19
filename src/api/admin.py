@@ -1,7 +1,7 @@
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 from database import db  
-from models import User, Order, OrderItem, Product, CartItem
+from models import User, Order, OrderItem, Product, CartItem , Favorite
 
 class UserAdmin(ModelView):
     column_list = ('id', 'name', 'email', 'is_admin', 'created_at')
@@ -17,6 +17,8 @@ class ProductAdmin(ModelView):
 
 class CartItemAdmin(ModelView):
     column_list = ('id', 'user_id', 'user.email', 'product_id', 'product.name', 'quantity', 'talla', 'created_at')
+class FavoriteAdmin(ModelView):
+    column_list = ('id', 'user_id', 'user.email', 'product_id', 'product.name')
 
 def setup_admin(app):
     app.config['SECRET_KEY'] = 'pon_aqui_tu_secret_key_segura'
@@ -27,4 +29,5 @@ def setup_admin(app):
     admin.add_view(OrderAdmin(Order, db.session))
     admin.add_view(OrderItemAdmin(OrderItem, db.session))
     admin.add_view(ProductAdmin(Product, db.session))
-    admin.add_view(CartItemAdmin(CartItem, db.session))  # Agregar vista para el modelo User
+    admin.add_view(CartItemAdmin(CartItem, db.session)) 
+    admin.add_view(FavoriteAdmin(Favorite, db.session)) # Agregar vista para el modelo User
