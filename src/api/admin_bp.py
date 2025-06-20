@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify # Blueprint para modularizar y relacionar con app
 from flask_bcrypt import Bcrypt                                  # Bcrypt para encriptación
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity   # Jwt para tokens
-from models import User                                          # importar tabla "User" de models
+from models import User ,Product                                         # importar tabla "User" de models
 from database import db                                          # importa la db desde database.py
 from datetime import timedelta   
 import re
@@ -101,7 +101,7 @@ def login():
             expires = timedelta(minutes=30)  # pueden ser "hours", "minutes", "days","seconds"
 
             user_id = login_user.id       # recuperamos el id del usuario para crear el token...
-            access_token = create_access_token(identity=user_id, expires_delta=expires)   # creamos el token con tiempo vencimiento
+            access_token = create_access_token(identity=str(login_user.id) , expires_delta=expires)   # creamos el token con tiempo vencimiento
             return jsonify({ 'access_token':access_token,"login_user":{"id":login_user.id,"email":login_user.email,"first_name":login_user.first_name,"last_name":login_user.last_name}}), 200  # Enviamos el token al front ( si es necesario serializamos el "login_user" y tambien lo enviamos en el objeto json )
 
         else:
@@ -128,3 +128,38 @@ def show_users():
         return jsonify(user_list), 200
     else:
         return {"Error": "Token inválido o no proporcionado"}, 401
+
+@admin_bp.route("/post/products", methods=["POST"])
+@jwt_required() 
+def post_products():
+      current_user_id = get_jwt_identity()  
+      user = User.query.get(int(current_user_id))
+      if not user or not user.is_admin:
+          return jsonify({"error": "Acceso denegado. Solo administradores pueden publicar productos."}), 403
+      
+      data=request.get_json()
+      name = data.get('name')
+      price = data.get('price')
+      description = data.get('description')
+      stock = data.get('stock', 0)
+      image_url = data.get('image_url')   
+       
+      if not name or not price :
+            return jsonify({"error": "Nombre, precio y descripción son obligatorios."}), 400
+      
+      new_poduct=Product(
+          name=name,
+          price=price,
+          description=description,
+          stock=stock,
+          image_url=image_url
+      )
+      db.session.add(new_poduct)
+      db.session.commit()
+      
+      return jsonify({"message": "Producto publicado exitosamente."}), 201
+    
+
+
+
+   
