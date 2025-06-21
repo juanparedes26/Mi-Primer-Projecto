@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify # Blueprint para modularizar y relacionar con app
 from flask_bcrypt import Bcrypt                                  # Bcrypt para encriptación
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity   # Jwt para tokens
-from models import User ,Product                                         # importar tabla "User" de models
+from models import User ,Product ,CartItem                                        # importar tabla "User" de models
 from database import db                                          # importa la db desde database.py
 from datetime import timedelta   
 import re
@@ -160,6 +160,45 @@ def post_products():
       return jsonify({"message": "Producto publicado exitosamente."}), 201
     
 
+@admin_bp.route("/get/products", methods=["GET"])
+def get_products():
+    products=Product.query.all()
+    product_list = []
+    for product in products:
+        product_dict = {
+            'id': product.id,
+            'name': product.name,
+            'price': product.price,
+            'description': product.description,
+            'stock': product.stock,
+            'image_url': product.image_url
+        }
+        product_list.append(product_dict)
 
+    return jsonify(product_list), 200
 
-   
+@admin_bp.route("/cart/add", methods=["POST"])
+@jwt_required()
+def add_to_cart():
+      current_user_id = get_jwt_identity()  
+      user = User.query.get(int(current_user_id))
+      if not user:
+            return jsonify({"error": "Usuario no encontrado."}), 404
+      data= request.get_json()
+      product_id = data.get('product_id')
+      quantity = data.get('quantity')
+      talla = data.get('talla')
+      if not product_id or not quantity or not talla:
+                return jsonify({"error": "ID del producto, cantidad y talla son obligatorios."}), 400
+      product = Product.query.get(product_id)
+      if not product:
+                return jsonify({"error": "Producto no encontrado."}), 404
+      new_cart_item = CartItem(
+          user_id=current_user_id,
+          product_id=product.id,
+          quantity=quantity,
+          talla=talla
+      )
+      db.session.add(new_cart_item)
+      db.session.commit()
+      return jsonify({"message": "Producto agregado al carrito exitosamente."}), 201
