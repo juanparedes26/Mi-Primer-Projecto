@@ -214,18 +214,27 @@ def get_cart_items():
     cart_items= CartItem.query.filter_by(user_id=current_user_id).all()
     if not cart_items:
         return jsonify({"message": "El carrito está vacío."}), 200
+    total_price = 0
 
     cart_items_list = []
     for item in cart_items:
         product = Product.query.get(item.product_id)
         if product:
+            subtotal = product.price * item.quantity
+            total_price += subtotal
+
             cart_items_list.append({
                 "id": item.id,
                 "product_id": item.product_id,
                 "quantity": item.quantity,
                 "talla": item.talla,
                 "product_name": product.name,
-                "product_price": product.price
+                "product_price": product.price,
+                "subtotal": subtotal,
+               
+                
+
+
             })
 
-    return jsonify(cart_items_list), 200
+    return jsonify(cart_items_list,total_price), 200
