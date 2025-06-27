@@ -232,9 +232,21 @@ def get_cart_items():
                 "product_price": product.price,
                 "subtotal": subtotal,
                
-                
-
-
             })
 
     return jsonify(cart_items_list,total_price), 200
+
+@admin_bp.route("/cart/remove/<int:item_id>", methods=["DELETE"])
+@jwt_required()
+def remove_from_cart(item_id):
+    current_user_id = int(get_jwt_identity())  
+    user = User.query.get(current_user_id)
+    if not user:
+        return jsonify({"error": "Usuario no encontrado."}), 404
+    cart_item = CartItem.query.get(item_id)
+    if not cart_item or cart_item.user_id != current_user_id:
+        return jsonify({"error": "Artículo del carrito no encontrado o no pertenece al usuario."}), 404 
+    db.session.delete(cart_item)
+    db.session.commit()
+    return jsonify({"message": "Artículo del carrito eliminado exitosamente."}), 200
+
